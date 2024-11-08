@@ -12,12 +12,16 @@ public class PlayerMovement : MonoBehaviour
     private Vector2 moveFriction;
     private Vector2 stopFriction;
     private Rigidbody2D rb;
+    private Camera mainCamera;
 
     private void Start()
     {
         // Get RigidBody2D component
         rb = GetComponent<Rigidbody2D>();
         
+        // Get main camera reference
+        mainCamera = Camera.main;
+
         // Initial calculations for velocities and frictions
         CalculateInitialValues();
     }
@@ -89,6 +93,9 @@ public class PlayerMovement : MonoBehaviour
 
         // Apply movement
         rb.velocity = currentVelocity;
+
+        // Apply boundary constraint
+        MoveBound();
     }
 
     public Vector2 GetFriction()
@@ -98,7 +105,18 @@ public class PlayerMovement : MonoBehaviour
 
     public void MoveBound()
     {
-        // To be implemented later
+        // Get the screen bounds in world units
+        Vector3 screenBounds = mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, mainCamera.transform.position.z));
+        
+        // Get the player position
+        Vector3 playerPosition = transform.position;
+
+        // Clamp the player's position to stay within the camera bounds
+        playerPosition.x = Mathf.Clamp(playerPosition.x, -screenBounds.x, screenBounds.x);
+        playerPosition.y = Mathf.Clamp(playerPosition.y, -screenBounds.y, screenBounds.y);
+
+        // Update the player position
+        transform.position = playerPosition;
     }
 
     public bool IsMoving()
