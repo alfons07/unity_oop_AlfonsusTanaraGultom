@@ -2,67 +2,61 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
-    private static Player instance;
-    public static Player Instance
-    {
-        get
-        {
-            if (instance == null)
-            {
-                instance = FindObjectOfType<Player>();
-                if (instance == null)
-                {
-                    GameObject go = new GameObject("Player");
-                    instance = go.AddComponent<Player>();
-                }
-            }
-            return instance;
-        }
-    }
+    // This for getting the instace of Player Singleton
+    public static Player Instance { get; private set; }
 
-    [SerializeField] private PlayerMovement playerMovement;
-    private Animator animator;
+    // Getting the PlayerMovement methods
+    PlayerMovement playerMovement;
+    // Animator
+    Animator animator;
 
-    private void Awake()
+
+    // Key for Singleton
+    void Awake()
     {
-        // Singleton implementation
-        if (instance != null && instance != this)
+        if (Instance != null && Instance != this)
         {
-            Destroy(gameObject);
+            Destroy(this);
             return;
         }
-        instance = this;
-        
-        // Get components
-        animator = GetComponent<Animator>();
-        if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
+
+        Instance = this;
+
+        DontDestroyOnLoad(gameObject);
     }
 
-    private void Start()
+    // Getting Component
+    void Start()
     {
-        // Get PlayerMovement reference
-        if (playerMovement == null)
-            playerMovement = GetComponent<PlayerMovement>();
+        // Get PlayerMovement components
+        playerMovement = GetComponent<PlayerMovement>();
 
-        // Get Animator from EngineEffect using Find
+        // Get Animator components
         animator = GameObject.Find("EngineEffect").GetComponent<Animator>();
     }
 
-    private void FixedUpdate()
+    // Using FixedUpdate to Move because of physics
+    void FixedUpdate()
     {
-        // Call Move method from PlayerMovement
-        if (playerMovement != null)
-            playerMovement.Move();
+        playerMovement.Move();
     }
 
-    private void LateUpdate()
+    // LateUpdate for animation related
+    void LateUpdate()
     {
-        // Update animator IsMoving parameter
-        if (animator != null && playerMovement != null)
+        playerMovement.MoveBound();
+        animator.SetBool("IsMoving", playerMovement.IsMoving());
+    }
+
+    private WeaponPickup currentWeaponPickup;
+
+    public void SwitchWeapon(Weapon newWeapon, WeaponPickup newWeaponPickup)
+    {
+        if (currentWeaponPickup != null)
         {
-            animator.SetBool("IsMoving", playerMovement.IsMoving());
+            currentWeaponPickup.PickupHandler(true);  // Make the previous weapon pickup visible again
         }
+        currentWeaponPickup = newWeaponPickup;
     }
 }
 

@@ -1,23 +1,30 @@
 using System.Collections;
-using System.Collections.Generic;
-using UnityEngine.SceneManagement;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+// Singleton
 public class LevelManager : MonoBehaviour
 {
-    [SerializeField] Animator transitionAnim;
+    [SerializeField] Animator animator;
+
     void Awake()
     {
-        
+        animator.enabled = false;
     }
 
     IEnumerator LoadSceneAsync(string sceneName)
     {
-        transitionAnim.SetTrigger("End");
+        animator.enabled = true;
+
+        // animator.SetTrigger("startTransition");
+
         yield return new WaitForSeconds(1);
+
         SceneManager.LoadSceneAsync(sceneName);
-        Player.Instance.transform.position = new(0, 0);
-        transitionAnim.SetTrigger("Start");
+
+        animator.SetTrigger("endTransition");
+
+        Player.Instance.transform.position = new(0, -4.5f);
     }
 
     public void LoadScene(string sceneName)
