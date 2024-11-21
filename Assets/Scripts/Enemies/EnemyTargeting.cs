@@ -1,51 +1,67 @@
 using UnityEngine;
 
-public class EnemyTargeting : Enemy
+public class EnemyTargetPlayer : Enemy
 {
-    public Transform player;
+    public float speed = 2f;
 
-    public override void Awake()
+    private Transform player;
+    Rigidbody2D rb;
+
+    void Start()
     {
-        base.Awake();
+        player = GameObject.FindGameObjectWithTag("Player").transform;
+        rb = GetComponent<Rigidbody2D>();
+    }
 
-        GameObject playerObject = GameObject.FindWithTag("Player"); 
-        if (playerObject != null)
-        {
-            player = playerObject.transform;
-        }
-        else
-        {
-            Debug.LogError(this + " tidak ada Player");
-        }
+    private void Awake()
+    {
+        PickRandomPositions();
+    }
 
-        
-        if (mainCamera != null)
+    void FixedUpdate()
+    {
+        if (player != null)
         {
-            float spawnX = Random.Range(0, Screen.width);
-            Vector3 spawnPosition = mainCamera.ScreenToWorldPoint(new Vector3(spawnX, Screen.height, mainCamera.transform.position.z));
-            transform.position = new Vector3(spawnPosition.x, spawnPosition.y, 0);
-        }
-        else
-        {
-            Debug.LogError(this + " tidak ada MainCamera");
+            Vector2 direction = (player.position - transform.position).normalized;
+            float angle = Mathf.Atan2(direction.y, direction.x);
+
+            rb.rotation = angle;
+            rb.velocity = speed * Time.deltaTime * direction;
         }
     }
 
-    public override void Move()
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        if (player == null) return;  
-
-        
-        Vector2 direction = (player.position - transform.position).normalized;
-        rb.velocity = direction * moveSpeed;
-    }
-
-    void OnTriggerEnter2D(Collider2D collider)
-    {
-        // Menghancurkan EnemyTargeting jika menabrak Player
-        if (collider.gameObject.CompareTag("Player"))
+        if (other.gameObject.CompareTag("Player"))
         {
             Destroy(gameObject);
         }
     }
+
+    private void PickRandomPositions()
+    {
+        Vector2 randPos;
+        Vector2 dir;
+
+        if (Random.Range(-1, 1) >= 0)
+        {
+            dir = Vector2.right;
+        }
+        else
+        {
+            dir = Vector2.left;
+        }
+
+        if (dir == Vector2.right)
+        {
+            randPos = new(1.1f, Random.Range(0.1f, 0.95f));
+        }
+        else
+        {
+            randPos = new(-0.01f, Random.Range(0.1f, 0.95f));
+        }
+
+        transform.position = Camera.main.ViewportToWorldPoint(randPos) + new Vector3(0, 0, 10);
+    }
 }
+

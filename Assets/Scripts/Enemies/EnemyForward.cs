@@ -2,30 +2,27 @@ using UnityEngine;
 
 public class EnemyForward : Enemy
 {
-    public override void Awake()
-    {
-        base.Awake();
+    [SerializeField] private float moveSpeed = 5f;
 
-        if (mainCamera != null)
+    private void Awake()
+    {
+        PickRandomPositions();
+    }
+
+    private void Update()
+    {
+        transform.Translate(moveSpeed * Time.deltaTime * Vector2.up);
+
+        if (Camera.main.WorldToViewportPoint(new(transform.position.x, transform.position.y, transform.position.z)).y < -0.05f)
         {
-            
-            float spawnX = Random.Range(0, Screen.width);
-            Vector3 spawnPosition = mainCamera.ScreenToWorldPoint(new Vector3(spawnX, Screen.height, mainCamera.transform.position.z));
-            transform.position = new Vector3(spawnPosition.x, spawnPosition.y, 0);
-        }
-        else
-        {
-            Debug.LogError(this + " tidak memiliki MainCamera");
+            PickRandomPositions();
         }
     }
 
-    public override void Move()
+    private void PickRandomPositions()
     {
-        rb.velocity = new Vector2(0, -moveSpeed);  
-    }
+        Vector2 randPos = new(Random.Range(0.1f, 0.99f), 1.1f);
 
-    void OnBecameInvisible()
-    {
-        Destroy(gameObject);  
+        transform.position = Camera.main.ViewportToWorldPoint(randPos) + new Vector3(0, 0, 10);
     }
 }

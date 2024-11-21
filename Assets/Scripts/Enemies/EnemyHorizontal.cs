@@ -2,58 +2,54 @@ using UnityEngine;
 
 public class EnemyHorizontal : Enemy
 {
-    private bool movingRight;
-    private Vector3 screenBounds;
+    [SerializeField] private float moveSpeed = 5f;
 
-    public override void Awake()
+    private Vector2 dir;
+
+    private void Awake()
     {
-        base.Awake();
+        PickRandomPositions();
+    }
 
-        if (mainCamera != null)
+    private void Update()
+    {
+        transform.Translate(moveSpeed * Time.deltaTime * dir);
+
+        Vector3 ePos = Camera.main.WorldToViewportPoint(new(transform.position.x, transform.position.y, transform.position.z));
+
+        if (ePos.x < -0.05f && dir == Vector2.right)
         {
-            
-            movingRight = Random.value > 0.5f;
-
-            
-            float spawnY = Random.Range(Screen.height / 2, Screen.height-50);
-            float spawnX = movingRight ? Screen.width + 50 : -50;
-            Vector3 spawnPosition = mainCamera.ScreenToWorldPoint(new Vector3(spawnX, spawnY, mainCamera.transform.position.z));
-            transform.position = new Vector3(spawnPosition.x, spawnPosition.y, 0);
+            PickRandomPositions();
         }
-        else
+        if (ePos.x > 1.05f && dir == Vector2.left)
         {
-            Debug.LogError(this + " tidak ada MainCamera");
+            PickRandomPositions();
         }
     }
 
-    public void Start()
+    private void PickRandomPositions()
     {
-        if (mainCamera != null)
+        Vector2 randPos;
+
+        if (Random.Range(-1, 1) >= 0)
         {
-            
-            screenBounds = mainCamera.ScreenToWorldPoint(new Vector3(Screen.width, Screen.height, mainCamera.transform.position.z));
+            dir = Vector2.right;
         }
         else
         {
-            Debug.LogError(this + " tidak ada MainCamera");
+            dir = Vector2.left;
         }
-    }
 
-    public override void Move()
-    {
-        if (mainCamera == null) return; 
-
-        
-        rb.velocity = new Vector2(movingRight ? moveSpeed : -moveSpeed, rb.velocity.y);
-
-        
-        if (transform.position.x > screenBounds.x)
+        if (dir == Vector2.right)
         {
-            movingRight = false;
+            randPos = new(1.1f, Random.Range(0.1f, 0.95f));
         }
-        else if (transform.position.x < -screenBounds.x)
+        else
         {
-            movingRight = true;
+            randPos = new(-0.01f, Random.Range(0.1f, 0.95f));
         }
+
+        transform.position = Camera.main.ViewportToWorldPoint(randPos) + new Vector3(0, 0, 10);
     }
 }
+

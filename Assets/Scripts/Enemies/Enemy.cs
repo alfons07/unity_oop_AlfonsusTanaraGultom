@@ -1,44 +1,29 @@
 using UnityEngine;
+using UnityEngine.Events;
 
 public class Enemy : MonoBehaviour
 {
-    public int level;
-    public Sprite enemySprite;
-    protected Rigidbody2D rb;
-    public float moveSpeed = 2f;
+  [SerializeField] protected int level;
 
-    public Camera mainCamera;
+  public UnityEvent enemyKilledEvent;
 
-    
-    public virtual void Awake()
-    {
-        rb = GetComponent<Rigidbody2D>();
-        rb.gravityScale = 0;
+  private void Start()
+  {
+    enemyKilledEvent ??= new UnityEvent();
+  }
 
-        
-        if (mainCamera == null)
-        {
-            mainCamera = Camera.main;
-            if (mainCamera == null)
-            {
-                Debug.LogError("Tidak ada camera" + this);
-            }
-        }
-    }
+  public void SetLevel(int level)
+  {
+    this.level = level;
+  }
 
-    
-    public void SetSprite(Sprite sprite)
-    {
-        GetComponent<SpriteRenderer>().sprite = sprite;
-    }
+  public int GetLevel()
+  {
+    return level;
+  }
 
-    public virtual void Move()
-    {
-        
-    }
-
-    void Update()
-    {
-        Move();
-    }
+  private void OnDestroy()
+  {
+    enemyKilledEvent.Invoke();
+  }
 }
